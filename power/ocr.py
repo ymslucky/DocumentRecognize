@@ -10,7 +10,14 @@ class OCR:
     TesseractOCR = None
     MMOCR = None
     from paddleocr import PaddleOCR
-    PaddleOCR = PaddleOCR()
+    from system.utils import get_project_path
+    PaddleOCR = PaddleOCR(enable_mkldnn=os.getenv('USE_MKLDNN'),
+                          use_angle_cls=os.getenv('USE_ANGLE_CLS'),
+                          # label_list=['0', '180'],
+                          use_gpu=os.getenv('USE_GPU'),
+                          cls_model_dir=get_project_path() + 'interface/ch_PP-OCRv2_cls_infer',
+                          det_model_dir=get_project_path() + 'interface/ch_PP-OCRv2_det_infer',
+                          rec_model_dir=get_project_path() + 'interface/ch_PP-OCRv2_rec_infer')
 
     @staticmethod
     def initialize() -> None:
@@ -34,8 +41,6 @@ class OCR:
         log = logging.getLogger('ppocr')  # PaddleOCR默认的日志
         log.handlers.clear()
         log.addHandler(ocr_log_file_handler)
-
-        OCR.PaddleOCR.__init__(enable_mkldnn=os.getenv('USE_MKLDNN'), use_angle_cls=os.getenv('USE_ANGLE_CLS'), label_list=['0', '180'], use_gpu=os.getenv('USE_GPU'))
 
     @staticmethod
     def recognize(img_path, filter=False, regular=None):
