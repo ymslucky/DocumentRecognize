@@ -1,6 +1,4 @@
 /.idea/
 /venv/
 /test/test_resources/
-/log/
-/temp/
 user.env

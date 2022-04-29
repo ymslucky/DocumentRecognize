@@ -52,35 +52,11 @@ class MyFTP:
             MyFTP.ftp.set_pasv(True)
             MyFTP.ftp.connect(os.getenv('FTP_SERVER'), int(os.getenv('FTP_PORT')))
             MyFTP.ftp.login(os.getenv('FTP_USERNAME'), os.getenv('FTP_PASSWORD'))
-            MyFTP.logger.info('FTP连接成功')
+            MyFTP.logger.debug('FTP连接成功')
 
         except Exception as err:
             MyFTP.logger.error("FTP 连接或登录失败 ，错误信息：%s" % err)
             raise err
-
-    # def is_same_size(self, local_file, remote_file):
-    #     """
-    #     判断远程文件和本地文件大小是否一致
-    #     @:param local_file 本地文件
-    #     @:param remote_file 远程文件
-    #     """
-    #     try:
-    #         remote_file_size = self.ftp.size(remote_file)
-    #     except Exception as err:
-    #         # self.logger.info("is_same_size() 错误描述为：%s" % err)
-    #         remote_file_size = -1
-    #
-    #     try:
-    #         local_file_size = os.path.getsize(local_file)
-    #     except Exception as err:
-    #         # self.logger.info("is_same_size() 错误描述为：%s" % err)
-    #         local_file_size = -1
-    #
-    #     self.logger.info('local_file_size:%d  , remote_file_size:%d' % (local_file_size, remote_file_size))
-    #     if remote_file_size == local_file_size:
-    #         return 1
-    #     else:
-    #         return 0
 
     @staticmethod
     def download_file(local_file, remote_file):
@@ -236,7 +212,7 @@ class MyFTP:
         """
         if MyFTP.ftp:
             MyFTP.ftp.quit()
-        MyFTP.logger.info("FTP连接已断开！")
+        MyFTP.logger.debug("FTP连接已断开！")
 
     def get_file_list(self, line):
         """ 获取文件列表
@@ -260,25 +236,3 @@ class MyFTP:
             pos += 1
         file_arr = [line[0], line[pos:]]
         return file_arr
-
-
-if __name__ == "__main__":
-    host_address = "192.168.0.95"
-    username = "liuxiang"
-    password = "xiangftp!123"
-    my_ftp = MyFTP(host_address)
-    my_ftp.login(username, password)
-
-    # 下载单个文件
-    # my_ftp.download_file("G:/ftp_test/XTCLauncher.apk", "/App/AutoUpload/ouyangpeng/I12/Release/XTCLauncher.apk")
-
-    # 下载目录
-    # my_ftp.download_file_tree("G:/ftp_test/", "App/AutoUpload/ouyangpeng/I12/")
-
-    # 上传单个文件
-    # my_ftp.upload_file("G:/ftp_test/Release/XTCLauncher.apk", "/App/AutoUpload/ouyangpeng/I12/Release/XTCLauncher.apk")
-    # my_ftp.upload_file("G:/ftp_test/Python编程快速上手__让繁琐工作自动化.pdf", "/App/AutoUpload/ouyangpeng/I12/Release/Python编程快速上手__让繁琐工作自动化.pdf")
-
-    my_ftp.upload_file_tree('E:/PyCharmProject/DocumentRecognize/temp/files', '/TEMP/')
-
-    my_ftp.close()
