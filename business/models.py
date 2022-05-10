@@ -50,7 +50,7 @@ class DocumentBase:
             # 条码识别
             results[png] = Barcode.decode(img_path=png, regular=regular)
             if not results[png] or len(results[png]) == 0:
-                # OCR，局部识别
+                # OCR，指定区域识别
                 results[png] = OCR.recognize(img_path=png, filter=(True if regular else False), regular=regular)
         return results
 
@@ -126,13 +126,11 @@ class IngramDelivery(DocumentBase):
     """
 
     def render(self, scale=2.5, rect=None):
-        # if not rect:
-        #     rect = [550, 0, 350, 300]
         return super().render(scale, rect)
 
-    @time_check
     def rec_logic(self, file_list: list, regular=r'[\d]{2}-[\d]{5}-[\d]{2}'):
         """识别逻辑"""
+
         return super().rec_logic(file_list, regular)
 
 
@@ -145,6 +143,15 @@ class CheckList(DocumentBase):
     @date 2022-04-14
     """
 
+    def rec_logic(self, file_list: list, regular=None):
+        from power.barcode import Barcode
+
+        results = {}
+        for index, png in enumerate(file_list):
+            # 条码识别
+            results[png] = Barcode.decode(img_path=png, regular=regular)
+        return results
+
     def recognize(self, scale=2.5, rect=None, regular=r'[0-9]{8}'):
         """查货单识别"""
         if not rect:
@@ -155,12 +162,12 @@ class CheckList(DocumentBase):
 class Manifest(DocumentBase):
     """
     载货清单
-    文本过滤：11位纯数字
+    文本过滤：13位纯数字
     @author 杨明树
     @date 2022-04-14
     """
 
-    def recognize(self, scale=2.5, rect=None, regular=r'[0-9]{11}'):
+    def recognize(self, scale=2.5, rect=None, regular=r'[0-9]{13}'):
         """查货单识别"""
         if not rect:
             rect = [500, 0, 500, 200]

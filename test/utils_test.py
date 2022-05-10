@@ -20,7 +20,8 @@ class UtilsTest(TestCase):
         self.assertEqual('E:\\PyCharmProject\\DocumentRecognize\\', get_project_path())
 
     def test_temp_file_clear(self):
-        from system.utils import temp_file_clear, get_project_path
+        from system.utils import get_project_path
+        from system.task_custom import temp_file_clear
 
         # 新建测试文件
         file1 = get_project_path() + 'temp/page_1.txt'

@@ -1,23 +1,10 @@
+import logging
 import os
 
 
 def get_project_path():
     """得到项目路径"""
     return os.path.abspath(os.path.dirname(__file__) + '/../') + '\\'
-
-
-def temp_file_clear():
-    """删除临时文件"""
-    path = os.path.abspath(get_project_path() + os.getenv('TEMP_DIR')) + '\\'
-    if os.path.exists(path):
-        for root, dirs, files in os.walk(path, topdown=False):
-            for file in files:
-                os.remove(os.path.join(root, file))
-            for directory in dirs:
-                os.rmdir(os.path.join(root, directory))
-    import logging
-    logger = logging.getLogger('DRLog')
-    logger.info('已执行定时任务：临时文件清除！')
 
 
 def time_check(func):
@@ -57,14 +44,9 @@ def sort_dict(dictionary: dict, reverse=False):
 def async_task(func):
     """异步任务装饰器"""
 
-    def wrapper(**kwargs):
+    def wrapper(*args, **kwargs):
         from system.task import TaskConfig
         pipe_result = TaskConfig.create_process_async(task=func, param=kwargs)
         return pipe_result
 
     return wrapper
-
-if __name__ == '__main__':
-    dic = {
-
-    }

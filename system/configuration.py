@@ -45,9 +45,7 @@ class SystemConfiguration:
     def blueprint_init():
         """蓝图初始化"""
         from business.views import busi_router
-        from system.views import sys_router
         # 将蓝图注册进应用
-        SystemConfiguration.APP.register_blueprint(sys_router, url_prefix='/system')
         SystemConfiguration.APP.register_blueprint(busi_router, url_prefix='/api')
         SystemConfiguration.logger.info('已注册蓝图!')
 
@@ -69,10 +67,19 @@ class SystemConfiguration:
     def dir_init():
         """文件目录初始化"""
         from system.utils import get_project_path
-        # OCR日志文件路径
+        # 目录初始化
+        LOG_FILE_PATH = os.path.abspath(get_project_path() + os.getenv('LOG_FILE_PATH'))
+        if not os.path.exists(LOG_FILE_PATH):
+            os.mkdir(LOG_FILE_PATH)
         OCR_LOG_PATH = os.path.abspath(get_project_path() + os.getenv('OCR_LOG_PATH'))
         if not os.path.exists(OCR_LOG_PATH):
             os.mkdir(OCR_LOG_PATH)
+        TEMP_DIR = os.path.abspath(get_project_path() + os.getenv('TEMP_DIR'))
+        if not os.path.exists(TEMP_DIR):
+            os.mkdir(TEMP_DIR)
+        PAGES_DIR = TEMP_DIR + '/pages'
+        if not os.path.exists(PAGES_DIR):
+            os.mkdir(PAGES_DIR)
 
     @staticmethod
     def log_init():
@@ -93,9 +100,11 @@ class SystemConfiguration:
         """任务调度器初始化"""
         SystemConfiguration.task.initialize(SystemConfiguration.APP)
         # 添加定时任务
+        from system.task_custom import temp_file_clear
+        task_manager = SystemConfiguration.task.scheduler
+
         # 临时文件清理，每周的周末凌晨四点执行
-        from system.utils import temp_file_clear
-        SystemConfiguration.task.scheduler.add_job(func=temp_file_clear, trigger='cron', day_of_week='sun', hour=4)
+        task_manager.add_job(func=temp_file_clear, trigger='cron', day_of_week='sun', hour=4)
 
     @staticmethod
     def ftp_init():

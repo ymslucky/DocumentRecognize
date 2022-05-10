@@ -1,5 +1,3 @@
-import os
-
 import pathos.multiprocessing
 
 
@@ -57,15 +55,3 @@ class TaskConfig(object):
     def get_jobs():
         """获取调度器中正在执行的定时任务"""
         return TaskConfig.scheduler.get_jobs()
-
-
-if __name__ == '__main__':
-    def a(**kwargs):
-        aaa = kwargs.get('aaa', 123)
-        print(aaa)
-
-
-    param = {
-        'aaa': 456
-    }
-    a(**param)

@@ -1,4 +1,7 @@
 /.idea/
 /venv/
 /test/test_resources/
-user.env
+/user.env
+*.log
+*.pdf
+*.png

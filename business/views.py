@@ -19,7 +19,7 @@ busi_router = Blueprint('business', __name__)
 
 
 @async_task
-def remove_temp_file(files=None):
+def remove_temp_file(files):
     """删除本地临时文件"""
     try:
         for file in files:
@@ -27,6 +27,12 @@ def remove_temp_file(files=None):
     except Exception as e:
         logger = logging.getLogger('DRLog')
         logger.warning(f'未能删除生成的临时文件, 错误信息：{e}')
+
+
+def upload_files(files, remote_dir):
+    for index, file in enumerate(files):
+        MyFTP.upload_file(file, remote_file=f'/{remote_dir + os.path.basename(file)}')
+    return True
 
 
 def base_control(model=DocumentBase):
@@ -49,12 +55,9 @@ def base_control(model=DocumentBase):
     doc = model(local_file)
     return_list = doc.recognize()
 
-    # 上传结果文件
     remote_dir = '/' + os.getenv('FTP_DIR')
-    local_dir = os.path.dirname(list(return_list.keys())[0])
-    MyFTP.upload_file_tree(local_dir, remote_dir)
-
     ret_data = []
+    upload_file_list = []
     for index, item in enumerate(return_list):
         row = {
             'page_image': remote_dir + os.path.basename(page_png_list[index]),
@@ -62,6 +65,11 @@ def base_control(model=DocumentBase):
             'text': return_list[item]
         }
         ret_data.append(row)
+        upload_file_list.append(page_png_list[index])
+        upload_file_list.append(item)
+
+    # 异步上传文件
+    upload_files(upload_file_list, f'/{os.getenv("FTP_DIR")}')
 
     # 异步删除临时文件
     files = list(return_list.keys())
