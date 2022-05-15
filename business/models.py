@@ -149,10 +149,12 @@ class CheckList(DocumentBase):
         results = {}
         for index, png in enumerate(file_list):
             # 条码识别
-            results[png] = Barcode.decode(img_path=png, regular=regular)
+            decode_res = Barcode.decode(img_path=png, regular=regular)
+            decode_res = [text for text in decode_res if len(text) == 8]
+            results[png] = decode_res
         return results
 
-    def recognize(self, scale=2.5, rect=None, regular=r'[0-9]{8}'):
+    def recognize(self, scale=2.5, rect=None, regular='\d{8}'):
         """查货单识别"""
         if not rect:
             rect = [400, 0, 300, 100]

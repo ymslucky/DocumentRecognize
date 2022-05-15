@@ -14,9 +14,6 @@ class SystemConfiguration:
     """
     # 程序实例
     APP = Flask(__name__)
-    # 任务调度器
-    from system.task import TaskConfig
-    task = TaskConfig()
     # 日志
     logger = logging.getLogger('DRLog')
     # 配置文件的默认路径
@@ -32,7 +29,6 @@ class SystemConfiguration:
         SystemConfiguration.blueprint_init()
         SystemConfiguration.load_config(config_path)
         SystemConfiguration.dir_init()
-        SystemConfiguration.ftp_init()
         SystemConfiguration.ocr_init()
         SystemConfiguration.log_init()
         SystemConfiguration.task_scheduler_init()
@@ -98,16 +94,5 @@ class SystemConfiguration:
     @staticmethod
     def task_scheduler_init():
         """任务调度器初始化"""
-        SystemConfiguration.task.initialize(SystemConfiguration.APP)
-        # 添加定时任务
-        from system.task_custom import temp_file_clear
-        task_manager = SystemConfiguration.task.scheduler
-
-        # 临时文件清理，每周的周末凌晨四点执行
-        task_manager.add_job(func=temp_file_clear, trigger='cron', day_of_week='sun', hour=4)
-
-    @staticmethod
-    def ftp_init():
-        """FTP初始化"""
-        from system.ftp import MyFTP
-        MyFTP.initialize()
+        from jl_task import jl_task_initialize
+        jl_task_initialize(SystemConfiguration.APP)

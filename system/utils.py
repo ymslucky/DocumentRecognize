@@ -39,14 +39,3 @@ def sort_dict(dictionary: dict, reverse=False):
     for index, item in enumerate(sorted_dict):
         n_dict[item[0]] = item[1]
     return n_dict
-
-
-def async_task(func):
-    """异步任务装饰器"""
-
-    def wrapper(*args, **kwargs):
-        from system.task import TaskConfig
-        pipe_result = TaskConfig.create_process_async(task=func, param=kwargs)
-        return pipe_result
-
-    return wrapper

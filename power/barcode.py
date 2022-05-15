@@ -27,10 +27,3 @@ class Barcode:
                 if regular and re.match(pattern=regular, string=data):
                     results.append(data)
         return results
-
-    @staticmethod
-    def locate():
-        """条码定位(未使用)"""
-        from system.errors import ServerError
-        raise ServerError('条码定位功能暂未支持，禁止使用！')
-        # return [0, 0, 0, 0]

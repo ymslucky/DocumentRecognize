@@ -10,15 +10,16 @@ from flask import Blueprint, request
 
 from business import models
 from business.models import DocumentBase
+from jl_task.async_task import AsyncManager
 from power.render import Renderer
 from system.errors import Success
-from system.ftp import MyFTP
-from system.utils import get_project_path, async_task, time_check
+from system.ftp import FtpTools
+from system.utils import get_project_path, time_check
 
 busi_router = Blueprint('business', __name__)
 
 
-@async_task
+@time_check
 def remove_temp_file(files):
     """删除本地临时文件"""
     try:
@@ -29,10 +30,10 @@ def remove_temp_file(files):
         logger.warning(f'未能删除生成的临时文件, 错误信息：{e}')
 
 
+@time_check
 def upload_files(files, remote_dir):
-    for index, file in enumerate(files):
-        MyFTP.upload_file(file, remote_file=f'/{remote_dir + os.path.basename(file)}')
-    return True
+    """批量上传文件"""
+    FtpTools.batch_upload(local_file_list=files, remote_dir=remote_dir)
 
 
 def base_control(model=DocumentBase):
@@ -40,9 +41,9 @@ def base_control(model=DocumentBase):
     param = request.get_json()
 
     # 从 FTP 下载文件到本地
-    upload_file_path = param.get('uploadFilePath')
-    local_file = get_project_path() + os.getenv('TEMP_DIR') + os.path.basename(upload_file_path)
-    MyFTP.download_file(local_file, upload_file_path)
+    remote_file = param.get('uploadFilePath')
+    local_file = get_project_path() + os.getenv('TEMP_DIR') + os.path.basename(remote_file)
+    FtpTools.download(local_file, remote_file)
 
     # 渲染整页
     param = {
@@ -57,25 +58,29 @@ def base_control(model=DocumentBase):
 
     remote_dir = '/' + os.getenv('FTP_DIR')
     ret_data = []
-    upload_file_list = []
-    for index, item in enumerate(return_list):
+    upload_page_list = []
+    for index, key in enumerate(return_list):
         row = {
             'page_image': remote_dir + os.path.basename(page_png_list[index]),
-            'page_cut_image': remote_dir + os.path.basename(item),
-            'text': return_list[item]
+            'page_cut_image': remote_dir + os.path.basename(key),
+            'text': return_list[key]
         }
         ret_data.append(row)
-        upload_file_list.append(page_png_list[index])
-        upload_file_list.append(item)
+        upload_page_list.append(page_png_list[index])
+        upload_page_list.append(key)
 
-    # 异步上传文件
-    upload_files(upload_file_list, f'/{os.getenv("FTP_DIR")}')
+    # 异步上传文件,删除文件
+    @AsyncManager.async_process
+    def end_process():
+        # 上传
+        upload_files(upload_page_list, f'/{os.getenv("FTP_DIR")}')
+        # 删除临时文件
+        files = list(return_list.keys())
+        files.append(local_file)
+        files.extend(page_png_list)
+        remove_temp_file(files=files)
 
-    # 异步删除临时文件
-    files = list(return_list.keys())
-    files.append(local_file)
-    files.extend(page_png_list)
-    remove_temp_file(files=files)
+    end_process()
 
     return Success(data=ret_data)
 
